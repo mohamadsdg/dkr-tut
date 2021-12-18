@@ -7,5 +7,5 @@ RUN npm install
 RUN mkdir node_modules/.cache && chmod 777 node_modules/.cache
 
 
-COPY . .
+# COPY . .
 CMD [ "npm","run","start" ]
