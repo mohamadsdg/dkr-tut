@@ -3,7 +3,7 @@ services:
   postgres:
     image: "postgres:latest"
     environment:
-      - POSTGRES_PASSWORD="myPassword"
+      - POSTGRES_PASSWORD=myPassword
   redis:
     image: "redis:latest"
   api:
@@ -13,6 +13,14 @@ services:
     volumes:
       - /app/node_modules
       - ./server:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=myPassword
+      - PGPORT=5432
   worker:
     build:
       context: ./worker
@@ -20,6 +28,9 @@ services:
     volumes:
       - /app/node_moudules
       - ./worker:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379=value
   client:
     build:
       context: ./client
