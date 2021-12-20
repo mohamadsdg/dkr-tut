@@ -3,7 +3,9 @@ services:
   postgres:
     image: "postgres:latest"
     environment:
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
   redis:
     image: "redis:latest"
   api:
@@ -16,10 +18,10 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - PGUSER=postgres
       - PGHOST=postgres
+      - PGUSER=postgres
       - PGDATABASE=postgres
-      - PGPASSWORD=postgres
+      - PGPASSWORD=postgres_password
       - PGPORT=5432
   worker:
     build:
@@ -41,6 +43,9 @@ services:
       - ./client:/app
   nginx:
     restart: always
+    depends_on: #starts services in dependency order
+      - api
+      - client
     build:
       context: ./nginx
       dockerfile: Dockerfile.dev
