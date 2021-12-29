@@ -105,4 +105,4 @@ jobs:
 
       - name: create container and test app
         working-directory: ./complex/client
-        run: docker run -t ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-client-dev npm run test -- --coverage
+        run: docker run -t ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-client-dev -e CI=true npm test
