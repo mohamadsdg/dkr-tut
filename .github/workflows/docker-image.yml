@@ -2,17 +2,24 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
+    # outputs:
+    # output1: ${{Job_status.}}
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Build the Docker image client
+        working-directory: ./complex
+        run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+      # - id: Job_status
+      # run: echo "::set-output name=test::world" ${{ job.status }}
