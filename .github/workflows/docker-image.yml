@@ -25,6 +25,7 @@ jobs:
   #         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
   #     - name: Push Client App
+  #       if: ${{github.event_name != 'pull_request' }}
   #       run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-client
 
   # auto-build:
@@ -47,47 +48,61 @@ jobs:
   #         push: ${{ github.event_name != 'pull_request' }}
   #         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-nginx:latest
 
-  auto-build-meta:
+  # auto-build-meta:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@v2
+
+  #     - name: Extract metadata (tags, labels) for Docker
+  #       id: meta
+  #       uses: docker/metadata-action@v3
+  #       with:
+  #         images: ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-server
+
+  #     - name: Login to Docker Hub
+  #       if: ${{github.event_name != 'pull_request' }}
+  #       uses: docker/login-action@v1
+  #       with:
+  #         username: ${{ secrets.DOCKER_HUB_USERNAME }}
+  #         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  #     - name: Set up Docker Buildx
+  #       id: buildx
+  #       uses: docker/setup-buildx-action@v1
+
+  #     - name: Inspect builder
+  #       run: |
+  #         echo "Name:      ${{ steps.buildx.outputs.name }}"
+  #         echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+  #         echo "Status:    ${{ steps.buildx.outputs.status }}"
+  #         echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+  #         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+
+  #     - name: Build and push Docker images server
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: ./complex/server
+  #         push: ${{ github.event_name != 'pull_request' }}
+  #         tags: ${{ steps.meta.outputs.tags }}
+
+  #     - name: Build and push images worker
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: ./complex/server
+  #         push: ${{ github.event_name != 'pull_request' }}
+  #         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-worker
+
+  client-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-server
+      - name: Build the Docker image client in development mode
+        working-directory: ./complex/client
+        run: DOCKER_BUILDKIT=1 docker build --progress=plain -t ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-client-dev -f Dockerfile.dev .
 
-      - name: Login to Docker Hub
-        if: ${{github.event_name != 'pull_request' }}
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Inspect builder
-        run: |
-          echo "Name:      ${{ steps.buildx.outputs.name }}"
-          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-          echo "Status:    ${{ steps.buildx.outputs.status }}"
-          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-
-      - name: Build and push Docker images server
-        uses: docker/build-push-action@v2
-        with:
-          context: ./complex/server
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-
-      - name: Build and push images worker
-        uses: docker/build-push-action@v2
-        with:
-          context: ./complex/server
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-worker
+      - name: create container and test app
+        working-directory: ./complex/client
+        run: docker run -t ${{ secrets.DOCKER_HUB_USERNAME }}/cplx-client-dev npm run test
