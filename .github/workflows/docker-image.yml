@@ -19,7 +19,7 @@ jobs:
 
       - name: Build the Docker image client
         working-directory: ./complex
-        run: docker build . --file ./client/Dockerfile
+        run: DOCKER_BUILDKIT=1 docker build -f ./client/Dockerfile .
 
       # - id: Job_status
       # run: echo "::set-output name=test::world" ${{ job.status }}
