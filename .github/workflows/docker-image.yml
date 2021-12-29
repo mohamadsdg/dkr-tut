@@ -19,7 +19,7 @@ jobs:
 
       - name: Build the Docker image client
         working-directory: ./complex
-        run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+        run: docker build . --file ./client/Dockerfile
 
       # - id: Job_status
       # run: echo "::set-output name=test::world" ${{ job.status }}
